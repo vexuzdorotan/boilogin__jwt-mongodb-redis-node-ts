@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
-import IUser from '../interface/userInterface'
+import IUser from '../interfaces/userInterface'
 
 const userSchema: Schema = new Schema(
   {
@@ -8,6 +8,10 @@ const userSchema: Schema = new Schema(
       required: true,
     },
     email: {
+      type: String,
+      required: true,
+    },
+    password: {
       type: String,
       required: true,
     },

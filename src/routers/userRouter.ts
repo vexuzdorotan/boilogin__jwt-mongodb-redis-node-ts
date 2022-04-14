@@ -1,8 +1,14 @@
 import { Router } from 'express'
 
-import { getAllusers, createUser } from '../controllers/userController'
+import {
+  loginUser,
+  getAllusers,
+  createUser,
+} from '../controllers/userController'
 
 const router = Router()
+
+router.route('/login').post(loginUser)
 
 router.route('/').get(getAllusers).post(createUser)
 

@@ -17,5 +17,5 @@ app.use(json())
 app.use('/api/users', userRouter)
 
 app.listen(PORT, () => {
-  console.log(`Server is up on port ${PORT}`)
+  console.log(`🚀 Server is up on port ${PORT}.`)
 })

@@ -3,6 +3,36 @@ import * as argon2 from 'argon2'
 
 import User from '../models/userModel'
 
+export const createUser: RequestHandler = async (req, res, next) => {
+  try {
+    // console.log(req.body)
+
+    const { name, email, password } = req.body
+
+    const isEmailExisted = await User.findOne({ email })
+
+    if (isEmailExisted)
+      return res
+        .status(400)
+        .send({ error: `Email '${email}' already existed.` })
+
+    const hashedPasword = await argon2.hash(password)
+
+    const user = new User({
+      name,
+      email,
+      password: hashedPasword,
+    })
+
+    await user.save()
+
+    const token = await user.generateAuthToken()
+    res.status(201).send({ user, token })
+  } catch (error) {
+    res.status(400).send(error)
+  }
+}
+
 export const loginUser: RequestHandler = async (req, res, next) => {
   const { email, password } = req.body
 
@@ -37,30 +67,14 @@ export const getAllusers: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const createUser: RequestHandler = async (req, res, next) => {
+export const getMyProfile: RequestHandler = async (req, res, next) => {
   try {
-    // console.log(req.body)
+    const { email } = req.body
 
-    const { name, email, password } = req.body
+    const user = await User.findOne({ email }, 'name email tokens')
 
-    const isEmailExisted = await User.findOne({ email })
-
-    if (isEmailExisted)
-      return res
-        .status(400)
-        .send({ error: `Email '${email}' already existed.` })
-
-    const hashedPasword = await argon2.hash(password)
-
-    const user = new User({
-      name,
-      email,
-      password: hashedPasword,
-    })
-
-    await user.save()
-    res.status(201).send({ user })
+    res.status(200).send({ user })
   } catch (error) {
-    res.status(400).send(error)
+    res.status(404).send(error)
   }
 }

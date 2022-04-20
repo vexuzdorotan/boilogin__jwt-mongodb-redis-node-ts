@@ -36,7 +36,7 @@ userSchema.methods.generateAuthToken = async function () {
   console.log({ user, JWT_SECRET_KEY })
 
   const token = jwt.sign({ _id: user._id }, JWT_SECRET_KEY, {
-    expiresIn: '7d',
+    expiresIn: '2m',
   })
 
   user.tokens = user.tokens.concat({ token })

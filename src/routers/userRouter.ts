@@ -5,16 +5,17 @@ import auth from '../middlewares/auth'
 import {
   createUser,
   loginUser,
-  getAllusers,
+  logoutToAllDevices,
+  getAllUsers,
   getMyProfile,
 } from '../controllers/userController'
 
 const router = Router()
 
 router.route('/login').post(loginUser)
-
 router.route('/me').get(auth, getMyProfile)
+router.route('/logoutAll').post(auth, logoutToAllDevices)
 
-router.route('/').get(getAllusers).post(createUser)
+router.route('/').get(getAllUsers).post(createUser)
 
 export default router

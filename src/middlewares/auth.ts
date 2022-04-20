@@ -18,7 +18,9 @@ const auth: RequestHandler = async (req, res, next) => {
 
     const { _id } = <JwtPayload>jwt.verify(token, JWT_SECRET_KEY)
 
-    const user = await User.findOne({ 'tokens.token': token })
+    await User.findOne({ 'tokens.token': token })
+
+    res.locals._id = _id
 
     next()
   } catch (error) {

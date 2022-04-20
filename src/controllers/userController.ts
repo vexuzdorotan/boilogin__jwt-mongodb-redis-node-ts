@@ -48,16 +48,18 @@ export const loginUser: RequestHandler = async (req, res, next) => {
     if (!validPassword)
       return res.status(404).send({ error: `Password is incorrect.` })
 
+    const token = await user.generateAuthToken()
+
     res.status(200).send({
       message: 'Logged in successfully.',
-      user: { name: user.name, email: user.email },
+      user: { name: user.name, email: user.email, token },
     })
   } catch (error) {
     res.status(401).send({ error: defaultErrorMsg })
   }
 }
 
-export const getAllusers: RequestHandler = async (req, res, next) => {
+export const getAllUsers: RequestHandler = async (req, res, next) => {
   try {
     const users = await User.find()
 
@@ -69,12 +71,35 @@ export const getAllusers: RequestHandler = async (req, res, next) => {
 
 export const getMyProfile: RequestHandler = async (req, res, next) => {
   try {
-    const { email } = req.body
+    const _id = res.locals._id
 
-    const user = await User.findOne({ email }, 'name email tokens')
+    const user = await User.findOne({ _id }, 'name email tokens')
 
     res.status(200).send({ user })
   } catch (error) {
     res.status(404).send(error)
+  }
+}
+
+export const logoutToAllDevices: RequestHandler = async (req, res, next) => {
+  try {
+    const { email } = req.body
+
+    const user = await User.findOne({ email })
+
+    if (!user)
+      return res
+        .status(404)
+        .send({ error: `User with email ${email} doesn't exist.` })
+
+    user.tokens = []
+
+    await user.save()
+
+    res
+      .status(200)
+      .send({ message: `${email} logged out to all devices successfully.` })
+  } catch (error) {
+    res.status(500).send(error)
   }
 }

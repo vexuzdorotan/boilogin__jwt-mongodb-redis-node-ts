@@ -3,10 +3,8 @@ import * as argon2 from 'argon2'
 
 import User from '../models/userModel'
 
-export const createUser: RequestHandler = async (req, res, next) => {
+const createUser: RequestHandler = async (req, res, next) => {
   try {
-    // console.log(req.body)
-
     const { name, email, password } = req.body
 
     const isEmailExisted = await User.findOne({ email })
@@ -33,7 +31,7 @@ export const createUser: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const loginUser: RequestHandler = async (req, res, next) => {
+const loginUser: RequestHandler = async (req, res, next) => {
   const { email, password } = req.body
 
   const defaultErrorMsg = `User with email ${email} doesn't exist.`
@@ -59,38 +57,26 @@ export const loginUser: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const getAllUsers: RequestHandler = async (req, res, next) => {
+const logoutUser: RequestHandler = async (req, res, next) => {
   try {
-    const users = await User.find()
+    const user = res.locals.user
+    const token = res.locals.token
 
-    res.status(200).send(users)
+    user.tokens = user.tokens.filter((i: any) => i.token !== token)
+
+    await user.save()
+
+    res
+      .status(200)
+      .send({ message: `Logout successfully.` })
   } catch (error) {
-    res.status(400).send(error)
+    res.status(500).send(error)
   }
 }
 
-export const getMyProfile: RequestHandler = async (req, res, next) => {
+const logoutUserToAllDevices: RequestHandler = async (req, res, next) => {
   try {
-    const _id = res.locals._id
-
-    const user = await User.findOne({ _id }, 'name email tokens')
-
-    res.status(200).send({ user })
-  } catch (error) {
-    res.status(404).send(error)
-  }
-}
-
-export const logoutToAllDevices: RequestHandler = async (req, res, next) => {
-  try {
-    const { email } = req.body
-
-    const user = await User.findOne({ email })
-
-    if (!user)
-      return res
-        .status(404)
-        .send({ error: `User with email ${email} doesn't exist.` })
+    const user = res.locals.user
 
     user.tokens = []
 
@@ -98,8 +84,30 @@ export const logoutToAllDevices: RequestHandler = async (req, res, next) => {
 
     res
       .status(200)
-      .send({ message: `${email} logged out to all devices successfully.` })
+      .send({ message: `Logged out to all devices successfully.` })
   } catch (error) {
     res.status(500).send(error)
   }
 }
+
+const getAllUsers: RequestHandler = async (req, res, next) => {
+  try {
+    const users = await User.find({}, '-_id name email')
+
+    res.status(200).send(users)
+  } catch (error) {
+    res.status(400).send(error)
+  }
+}
+
+const getMyProfile: RequestHandler = async (req, res, next) => {
+  try {
+    const user = res.locals.user
+
+    res.status(200).send({ user })
+  } catch (error) {
+    res.status(404).send(error)
+  }
+}
+
+export { createUser, loginUser, logoutUserToAllDevices, getMyProfile, getAllUsers }
